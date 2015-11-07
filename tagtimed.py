@@ -82,8 +82,8 @@ import util
 
 rand = settings.rand
 
-lstping = rand.prevping(launchtime)
-nxtping = rand.nextping(lstping)
+lastping = rand.prevping(launchtime)
+nextping = rand.nextping(lastping)
 
 if settings.cygwin:
 	util.unlock()  # on cygwin may have stray lock files around.
@@ -93,7 +93,7 @@ cmd = os.path.join(settings.path, 'launch.py')
 if subprocess.call(cmd) != 0:
     print('SYSERR:', cmd, file=sys.stderr)
 
-tdelta = datetime.timedelta(seconds=time.time()-lstping)
+tdelta = datetime.timedelta(seconds=time.time()-lastping)
 print("TagTime is watching you! Last ping would've been",
       tdelta, "ago.", file=sys.stderr)
 
@@ -108,9 +108,9 @@ while True:
     # time.sleep(util.clip(nextping - time.time(), 0, 2))
     now = time.time()
 
-    if nxtping <= now:
-        if settings.catchup or nxtping > now - settings.retrothresh:
-	        util.playsound()
+    if nextping <= now:
+        if settings.catchup or nextping > now - settings.retrothresh:
+            util.playsound()
 
         # invokes popup for this ping plus additional popups if there were more
         #   pings while answering this one:
@@ -118,13 +118,13 @@ while True:
         util.callcmd(cmd)
         s = '{i: 4}: PING! gap {gap} avg {avg} tot {tot}'.format(
             i=i,
-            gap=datetime.timedelta(seconds=nxtping-lstping),
+            gap=datetime.timedelta(seconds=nextping-lastping),
             avg=datetime.timedelta(seconds=(0.0 + time.time() - start) / i),
             tot=datetime.timedelta(seconds=(0.0 + time.time() - start)))
-        print(util.annotime(s, nxtping, 72), file=sys.stderr)
+        print(util.annotime(s, nextping, 72), file=sys.stderr)
 
-        lstping = nxtping
-        nxtping = rand.nextping(nxtping)
+        lastping = nextping
+        nextping = rand.nextping(nextping)
         i += 1
 
 
